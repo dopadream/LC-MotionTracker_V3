@@ -8,13 +8,13 @@ using UnityEngine;
 public class MotionTrackerConfig
 {
     private static int MotionTrackerCostLocal = 30;
-    private static float MotionTrackerBatteryDurationLocal = 100f;
-    private static float MotionTrackerSpeedDetectLocal = 0.05f;
+    private static float MotionTrackerBatteryDurationLocal = 200f;
+    private static float MotionTrackerSpeedDetectLocal = 0.01f;
     private static float MotionTrackerRangeLocal = 50f;
 
     public static int MotionTrackerCost = 30;
-    public static float MotionTrackerBatteryDuration = 100f;
-    public static float MotionTrackerSpeedDetect = 0.05f;
+    public static float MotionTrackerBatteryDuration = 200f;
+    public static float MotionTrackerSpeedDetect = 0.01f;
     public static float MotionTrackerRange = 50f;
 
     private static void SetValues(int Cost, float BatteryDuration, float SpeedDetect, float Range)
@@ -31,8 +31,8 @@ public class MotionTrackerConfig
         Debug.Log(config);
 
         MotionTrackerCostLocal = Math.Clamp(config.Bind("General", "MotionTrackerCost", 30, "Motion Tracker's cost").Value, 0, 9999);
-        MotionTrackerBatteryDurationLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerBatteryDuration", 100f, "Motion Tracker's battery life").Value, 0f, 9999f);
-        MotionTrackerSpeedDetectLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerSpeedDetect", 0.05f, "Minimum speed at which entities can be detected by the Motion Tracker (0.05 is faster than a crouch walk)").Value, 0f, 9999f);
+        MotionTrackerBatteryDurationLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerBatteryDuration", 200f, "Motion Tracker's battery life").Value, 0f, 9999f);
+        MotionTrackerSpeedDetectLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerSpeedDetect", 0.01f, "Minimum speed at which entities can be detected by the Motion Tracker (0.05 is faster than a crouch walk)").Value, 0f, 9999f);
         MotionTrackerRangeLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerRange", 50f, "Motion Tracker's range of action").Value, 0f, 9999f);
 
         SetToLocalValues();
