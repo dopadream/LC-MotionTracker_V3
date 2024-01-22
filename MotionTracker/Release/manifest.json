@@ -1,7 +1,7 @@
 {
     "name": "Motion_Tracker_V2",
     "version_number": "1.0.0",
-    "website_url": "https://github.com/CyanBlob/LethalCompany_MotionTracker",
+    "website_url": "https://github.com/Entity378/LethalCompany_MotionTracker_V2",
     "description": "Adds a Motion Tracker similar to the one in Alien: Isolation",
     "dependencies": [
         "BepInEx-BepInExPack-5.4.2100",
