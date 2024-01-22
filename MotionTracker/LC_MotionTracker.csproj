@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <AssemblyName>MotionTracker-V2</AssemblyName>
+        <Description>Add the MotionTracker from "Alien: Isolation"</Description>
+        <Version>1.0.0</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.*" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+        <PackageReference Include="UnityEngine.Modules" Version="2022.3.9" IncludeAssets="compile" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    </ItemGroup>
+    
+    <!-- Windows settings -->
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.Netcode.Runtime">
+            <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Netcode.Runtime.dll</HintPath>
+        </Reference>
+        <Reference Include="LethalLib">
+            <HintPath>C:\Users\fabri\AppData\Roaming\r2modmanPlus-local\LethalCompany\profiles\MODS 49.0V\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+        </Reference>
+        <Reference Include="Collections">
+            <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Collections.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Compile Remove="LC_MotionTracker_Asset\**" />
+      <Compile Remove="LC_MotionTracker_Assets\**" />
+      <Compile Remove="LC_MotionTracker_Assets_updated\**" />
+      <Compile Update="MotionTrackerResource.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>MotionTrackerResource.resx</DependentUpon>
+      </Compile>
+      <Compile Remove="LC_MotionTracker_Assets\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Remove="LC_MotionTracker_Asset\**" />
+      <EmbeddedResource Remove="LC_MotionTracker_Assets\**" />
+      <EmbeddedResource Remove="LC_MotionTracker_Assets_updated\**" />
+      <EmbeddedResource Update="MotionTrackerResource.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>MotionTrackerResource.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Remove="LC_MotionTracker_Assets\**" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="LC_MotionTracker_Asset\**" />
+      <None Remove="LC_MotionTracker_Assets\**" />
+      <None Remove="LC_MotionTracker_Assets_updated\**" />
+    </ItemGroup>
+</Project>
