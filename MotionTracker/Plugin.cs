@@ -3,6 +3,7 @@ using LethalLib.Modules;
 using UnityEngine;
 using MotionTracker.Patches;
 using Unity.Netcode;
+using HarmonyLib;
 
 namespace MotionTracker
 {
@@ -15,6 +16,7 @@ namespace MotionTracker
         private void Awake()
         {
             MotionTrackerConfig.LoadConfig(Config);
+            Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
 
             AssetBundle assetBundle = AssetBundle.LoadFromMemory(MotionTrackerResource.motiontrackerled);
             motionTrackerLED_Item = assetBundle.LoadAsset<Item>("assets/MotionTrackerItem.asset");
