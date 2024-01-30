@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using HarmonyLib;
 
 namespace MotionTracker.Patches;
 
@@ -34,7 +33,6 @@ public class MotionTrackerScript : GrabbableObject
 
     public void Awake()
     {
-        Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
         grabbable = true;
         grabbableToEnemies = true;
         mainObjectRenderer = GetComponent<MeshRenderer>();
