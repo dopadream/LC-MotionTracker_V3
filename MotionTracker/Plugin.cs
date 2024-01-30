@@ -18,8 +18,9 @@ namespace MotionTracker
         {
             MotionTrackerConfig.LoadConfig(Config);
 
-            HarmonyVar = Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
+            HarmonyVar = Harmony.CreateAndPatchAll(typeof(MotionTrackerScript));
             HarmonyVar.PatchAll(typeof(MotionTrackerConfig));
+            Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
 
             AssetBundle assetBundle = AssetBundle.LoadFromMemory(MotionTrackerResource.motiontrackerled);
             motionTrackerLED_Item = assetBundle.LoadAsset<Item>("assets/MotionTrackerItem.asset");
