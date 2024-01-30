@@ -12,11 +12,14 @@ namespace MotionTracker
     {
         private static Item motionTrackerLED_Item;
         private static MotionTrackerScript spawnedMotionTracker;
+        private Harmony HarmonyVar;
 
         private void Awake()
         {
             MotionTrackerConfig.LoadConfig(Config);
-            Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
+
+            HarmonyVar = Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
+            HarmonyVar.PatchAll(typeof(MotionTrackerConfig));
 
             AssetBundle assetBundle = AssetBundle.LoadFromMemory(MotionTrackerResource.motiontrackerled);
             motionTrackerLED_Item = assetBundle.LoadAsset<Item>("assets/MotionTrackerItem.asset");
