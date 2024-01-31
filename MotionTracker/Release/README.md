@@ -7,6 +7,9 @@ Original mod: https://thunderstore.io/c/lethal-company/p/CyanBlob/Motion_Tracker
 
 # Versions
 
+## 1.1.0
+- Fixed a config sync error
+
 ## 1.0.3
 - Small changes
 
