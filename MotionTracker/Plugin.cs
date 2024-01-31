@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using LethalLib.Modules;
 using UnityEngine;
 using MotionTracker.Patches;
@@ -12,14 +12,13 @@ namespace MotionTracker
     {
         private static Item motionTrackerLED_Item;
         private static MotionTrackerScript spawnedMotionTracker;
-        private Harmony HarmonyVar;
 
         private void Awake()
         {
+            Logger.LogInfo($"Plugin {"Entity378.MotionTracker-V2"} is loaded!");
             MotionTrackerConfig.LoadConfig(Config);
+            Logger.LogInfo("Config loaded");
 
-            HarmonyVar = Harmony.CreateAndPatchAll(typeof(MotionTrackerScript));
-            HarmonyVar.PatchAll(typeof(MotionTrackerConfig));
             Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
 
             AssetBundle assetBundle = AssetBundle.LoadFromMemory(MotionTrackerResource.motiontrackerled);
