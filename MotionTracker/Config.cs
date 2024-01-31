@@ -28,7 +28,7 @@ public class MotionTrackerConfig
 
     public static void LoadConfig(ConfigFile config)
     {
-        Debug.Log(config);
+        Debug.Log("MotionTrackerLog CONFIG:" + config);
 
         MotionTrackerCostLocal = Math.Clamp(config.Bind("General", "MotionTrackerCost", 30, "Motion Tracker's cost").Value, 0, 9999);
         MotionTrackerBatteryDurationLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerBatteryDuration", 200f, "Motion Tracker's battery life").Value, 0f, 9999f);
@@ -59,6 +59,7 @@ public class MotionTrackerConfig
                     MotionTrackerBatteryDuration = BitConverter.ToSingle(data, 5);
                     MotionTrackerSpeedDetect = BitConverter.ToSingle(data, 9);
                     MotionTrackerRange = BitConverter.ToSingle(data, 13);
+                    Debug.Log("MotionTrackerLog: Host config set successfully");
                     break;
                 }
             default:
@@ -97,10 +98,10 @@ public class MotionTrackerConfig
     public static void OnReceiveSync(ulong clientID, FastBufferReader reader)
     {
         Debug.Log("MotionTrackerLog: Received config from host");
-        byte[] data = new byte[16];
+        byte[] data = new byte[17];
         try
         {
-            reader.ReadBytes(ref data, 16);
+            reader.ReadBytes(ref data, 17);
             SetSettings(data);
         }
         catch (Exception e)
@@ -124,8 +125,9 @@ public class MotionTrackerConfig
         {
             Debug.Log("MotionTrackerLog: Connected to server, requesting settings");
             NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("MotionTracker_OnReceiveConfigSync", OnReceiveSync);
-            FastBufferWriter blankOut = new();
-            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("MotionTracker_OnRequestConfigSync", 0, blankOut, NetworkDelivery.Reliable);
+            byte[] data = new byte[17];
+            FastBufferWriter blankOut = new(data.Length, Unity.Collections.Allocator.Temp);
+            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("MotionTracker_OnRequestConfigSync", 0uL, blankOut, NetworkDelivery.Reliable);
         }
     }
 
