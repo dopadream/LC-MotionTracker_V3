@@ -7,6 +7,8 @@ using UnityEngine;
 
 public class MotionTrackerConfig
 {
+    private const int byteDim = 17;
+
     private static int MotionTrackerCostLocal = 30;
     private static float MotionTrackerBatteryDurationLocal = 200f;
     private static float MotionTrackerSpeedDetectLocal = 0.01f;
@@ -40,7 +42,7 @@ public class MotionTrackerConfig
 
     public static byte[] GetSettings()
     {
-        byte[] data = new byte[17];
+        byte[] data = new byte[byteDim];
         data[0] = 1;
         Array.Copy(BitConverter.GetBytes(MotionTrackerCostLocal), 0, data, 1, 4);
         Array.Copy(BitConverter.GetBytes(MotionTrackerBatteryDurationLocal), 0, data, 5, 4);
@@ -98,10 +100,10 @@ public class MotionTrackerConfig
     public static void OnReceiveSync(ulong clientID, FastBufferReader reader)
     {
         Debug.Log("MotionTrackerLog: Received config from host");
-        byte[] data = new byte[17];
+        byte[] data = new byte[byteDim];
         try
         {
-            reader.ReadBytes(ref data, 17);
+            reader.ReadBytes(ref data, byteDim);
             SetSettings(data);
         }
         catch (Exception e)
@@ -125,8 +127,7 @@ public class MotionTrackerConfig
         {
             Debug.Log("MotionTrackerLog: Connected to server, requesting settings");
             NetworkManager.Singleton.CustomMessagingManager.RegisterNamedMessageHandler("MotionTracker_OnReceiveConfigSync", OnReceiveSync);
-            byte[] data = new byte[17];
-            FastBufferWriter blankOut = new(data.Length, Unity.Collections.Allocator.Temp);
+            FastBufferWriter blankOut = new(byteDim, Unity.Collections.Allocator.Temp);
             NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage("MotionTracker_OnRequestConfigSync", 0uL, blankOut, NetworkDelivery.Reliable);
         }
     }
