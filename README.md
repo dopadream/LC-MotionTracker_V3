@@ -1,5 +1,8 @@
-# MotionTrackerV2
-Adds a Motion Tracker similar to the one in "Alien: Isolation"
+# Motion Tracker V3
+Adds a Motion Tracker similar to the one in "Alien: Isolation".\
+Can be bought in the terminal to track movement near the player
 
-## This is an updated and configurable version of another mod!
-Original mod: https://github.com/CyanBlob/LethalCompany_MotionTracker
+This is a fork of a fork of another mod. Yeah.
+
+Forked mod: https://thunderstore.io/c/lethal-company/p/Entity378/Motion_Tracker_V2 \
+Original mod: https://thunderstore.io/c/lethal-company/p/CyanBlob/Motion_Tracker
