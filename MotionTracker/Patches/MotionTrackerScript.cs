@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace MotionTracker.Patches;
 
@@ -86,18 +87,19 @@ public class MotionTrackerScript : GrabbableObject
         Enable(false);
     }
 
-    private void Enable(bool enable, bool inHand = true)
+    private void Enable(bool enable)
     {
-        baseRadar.SetActive(enable);
         LED.SetActive(enable);
 
-        if (inHand)
+        if (!isPocketed)
         {
             baseRadarOff.SetActive(!enable);
+            baseRadar.SetActive(enable);
         }
         else
         {
             baseRadarOff.SetActive(false);
+            baseRadar.SetActive(false);
         }
 
         if (!enable)
@@ -134,7 +136,7 @@ public class MotionTrackerScript : GrabbableObject
         base.UseUpBatteries();
         trackerAudio.PlayOneShot(trackerOutOfBatteriesClip);
         RoundManager.Instance.PlayAudibleNoise(base.transform.position, 13f, 0.65f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
-        Enable(false, false);
+        Enable(false);
     }
 
     public override void Update()
@@ -175,7 +177,7 @@ public class MotionTrackerScript : GrabbableObject
 
             var playerPos = transform.position;
 
-            var colliderCount = Physics.OverlapSphereNonAlloc(playerPos, searchRadius, colliders,
+            var colliderCount = Physics.OverlapCapsuleNonAlloc(playerPos, new Vector3(playerPos.x, playerPos.y-200, playerPos.z), searchRadius, colliders,
                 layerMask: 8 | 524288); // Player | Enemies
 
 
@@ -220,7 +222,7 @@ public class MotionTrackerScript : GrabbableObject
                     if (entity.speed > MotionTrackerConfig.MotionTrackerSpeedDetect && !trackerAudio.isPlaying)
                     {
                         trackerAudio.PlayOneShot(trackerBlipClip);
-                        RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.1f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
+                        RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.05f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
                     }
 
                     scannedEntities.Add(entity.obj.transform.GetHashCode(), entity);

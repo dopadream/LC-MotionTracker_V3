@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace MotionTracker
 {
-    [BepInPlugin("Entity378.MotionTracker-V2", "MotionTracker-V2", "1.0.0")]
+    [BepInPlugin("dopadream.MotionTracker-V3", "MotionTracker-V3", "1.0.3")]
     public class Plugin : BaseUnityPlugin
     {
         private static Item motionTrackerLED_Item;
@@ -18,7 +18,7 @@ namespace MotionTracker
 
         private void Awake()
         {
-            Logger.LogInfo($"Plugin {"Entity378.MotionTracker-V2"} is loaded!");
+            Logger.LogInfo($"Plugin {"dopadream.MotionTracker-V3"} is loaded!");
             MotionTrackerConfig.LoadConfig(Config);
             Logger.LogInfo("Config loaded");
 
