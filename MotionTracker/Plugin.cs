@@ -4,6 +4,8 @@ using UnityEngine;
 using MotionTracker.Patches;
 using Unity.Netcode;
 using HarmonyLib;
+using System.IO;
+using System.Reflection;
 
 namespace MotionTracker
 {
@@ -12,6 +14,7 @@ namespace MotionTracker
     {
         private static Item motionTrackerLED_Item;
         private static MotionTrackerScript spawnedMotionTracker;
+        public static AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "motiontrackerled"));
 
         private void Awake()
         {
@@ -21,8 +24,18 @@ namespace MotionTracker
 
             Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
 
-            AssetBundle assetBundle = AssetBundle.LoadFromMemory(MotionTrackerResource.motiontrackerled);
-            motionTrackerLED_Item = assetBundle.LoadAsset<Item>("assets/MotionTrackerItem.asset");
+            if (motionTrackerLED_Item == null)
+            {
+                try
+                {
+                    motionTrackerLED_Item = assetBundle.LoadAsset("MotionTrackerItem", typeof(Item)) as Item;
+                }
+                catch
+                {
+                    Logger.LogError("Encountered some error loading asset bundle. Did you install the plugin correctly?");
+                    return;
+                }
+            }
 
             var netObj = motionTrackerLED_Item.spawnPrefab.GetComponent<NetworkObject>();
 

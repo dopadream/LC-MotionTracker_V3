@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace MotionTracker.Patches;
@@ -11,6 +14,8 @@ public struct ScannedEntity
     public Vector3 rawPosition;
     public float speed;
     public GameObject blip;
+    public AudioSource trackerAudio;
+
 }
 
 public class MotionTrackerScript : GrabbableObject
@@ -20,6 +25,8 @@ public class MotionTrackerScript : GrabbableObject
     private GameObject LED;
     private GameObject blip;
     private GameObject blipParent;
+    private AudioSource trackerAudio;
+    private static AudioClip trackerOnClip, trackerOffClip, trackerBlipClip, trackerOutOfBatteriesClip;
 
     private float searchRadius = MotionTrackerConfig.MotionTrackerRange;
 
@@ -31,11 +38,34 @@ public class MotionTrackerScript : GrabbableObject
 
     Collider[] colliders = new Collider[200];
 
-    public void Awake()
+    public void Awake() 
     {
+        List<Item> itemsList = StartOfRound.Instance?.allItemsList?.itemsList;
+
+        try
+        {
+            trackerOnClip = Plugin.assetBundle.LoadAsset("motion_detector_on", typeof(AudioClip)) as AudioClip;
+            trackerOffClip = Plugin.assetBundle.LoadAsset("motion_detector_off", typeof(AudioClip)) as AudioClip;
+            trackerBlipClip = Plugin.assetBundle.LoadAsset("motion_detector_ping", typeof(AudioClip)) as AudioClip;
+            trackerOutOfBatteriesClip = Plugin.assetBundle.LoadAsset("FlashlightFlicker", typeof(AudioClip)) as AudioClip;
+        }
+        catch
+        {
+            return;
+        }
+
+        Item walkieTalkie = itemsList.FirstOrDefault(item => item.name == "WalkieTalkie");
+        Item shotGun = itemsList.FirstOrDefault(item => item.name == "Shotgun");
+        Item proFlashlight = itemsList.FirstOrDefault(item => item.name == "ProFlashlight");
+
+        itemProperties.verticalOffset = 0.1f;
+        itemProperties.grabSFX = walkieTalkie.grabSFX;
+        itemProperties.pocketSFX = walkieTalkie.pocketSFX;
+        itemProperties.dropSFX = shotGun.dropSFX;
         grabbable = true;
         grabbableToEnemies = true;
         mainObjectRenderer = GetComponent<MeshRenderer>();
+        trackerAudio = GetComponent<AudioSource>();
         useCooldown = 1f;
         insertedBattery = new Battery(false, 1);
         itemProperties.batteryUsage = MotionTrackerConfig.MotionTrackerBatteryDuration;
@@ -83,6 +113,17 @@ public class MotionTrackerScript : GrabbableObject
     {
         base.ItemActivate(used, buttonDown);
 
+        if (used)
+        {
+            trackerAudio.PlayOneShot(trackerOnClip);
+            RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.4f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
+        }
+        else
+        {
+            trackerAudio.PlayOneShot(trackerOffClip);
+            RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.4f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
+        }
+
         Enable(used);
 
         Debug.Log($"Motion tracker activate? : {used}");
@@ -91,6 +132,8 @@ public class MotionTrackerScript : GrabbableObject
     public override void UseUpBatteries()
     {
         base.UseUpBatteries();
+        trackerAudio.PlayOneShot(trackerOutOfBatteriesClip);
+        RoundManager.Instance.PlayAudibleNoise(base.transform.position, 13f, 0.65f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
         Enable(false, false);
     }
 
@@ -174,6 +217,11 @@ public class MotionTrackerScript : GrabbableObject
 
                     // only enable blips for moving objects
                     entity.blip.SetActive(entity.speed > MotionTrackerConfig.MotionTrackerSpeedDetect);
+                    if (entity.speed > MotionTrackerConfig.MotionTrackerSpeedDetect && !trackerAudio.isPlaying)
+                    {
+                        trackerAudio.PlayOneShot(trackerBlipClip);
+                        RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.1f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
+                    }
 
                     scannedEntities.Add(entity.obj.transform.GetHashCode(), entity);
                 }
