@@ -154,7 +154,7 @@ public class MotionTrackerScript : GrabbableObject
             if (!isPocketed)
             {
                 Enable(true);
-                blipParent.transform.localRotation = Quaternion.Euler(0, 0, base.transform.eulerAngles.y + 0);
+                blipParent.transform.localRotation = Quaternion.Euler(0, 0, baseRadar.transform.eulerAngles.y + 0);
             }
             else
             {
