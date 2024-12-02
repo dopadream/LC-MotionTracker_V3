@@ -1,10 +1,14 @@
+using LethalLib.Modules;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.XR;
+using static UnityEngine.GraphicsBuffer;
+using Vector3 = UnityEngine.Vector3;
 
 namespace MotionTracker.Patches;
 
@@ -22,7 +26,7 @@ public struct ScannedEntity
 public class MotionTrackerScript : GrabbableObject
 {
     private GameObject baseRadar;
-    private GameObject baseRadarOff;
+    private GameObject baseRadarOff, baseBackground;
     private GameObject LED;
     private GameObject blip;
     private GameObject blipParent;
@@ -31,7 +35,9 @@ public class MotionTrackerScript : GrabbableObject
 
     private float searchRadius = MotionTrackerConfig.MotionTrackerRange;
 
-    private Hashtable scannedEntities = new();
+    private Dictionary<int, ScannedEntity> lastScannedEntities = new Dictionary<int, ScannedEntity>();
+    private Dictionary<int, ScannedEntity> scannedEntities = new Dictionary<int, ScannedEntity>();
+    private List<EnemyAI> enemyAIList = new List<EnemyAI>();
 
     private List<GameObject> blipPool = new List<GameObject>();
 
@@ -39,7 +45,9 @@ public class MotionTrackerScript : GrabbableObject
 
     Collider[] colliders = new Collider[200];
 
-    public void Awake() 
+
+
+    public void Awake()
     {
         List<Item> itemsList = StartOfRound.Instance?.allItemsList?.itemsList;
 
@@ -64,6 +72,7 @@ public class MotionTrackerScript : GrabbableObject
         itemProperties.pocketSFX = walkieTalkie.pocketSFX;
         itemProperties.dropSFX = shotGun.dropSFX;
         itemProperties.weight = MotionTrackerConfig.MotionTrackerWeight;
+        itemProperties.highestSalePercentage = 80;
         grabbable = true;
         grabbableToEnemies = true;
         mainObjectRenderer = GetComponent<MeshRenderer>();
@@ -73,6 +82,8 @@ public class MotionTrackerScript : GrabbableObject
         itemProperties.batteryUsage = MotionTrackerConfig.MotionTrackerBatteryDuration;
         baseRadar = transform.Find("Canvas/BaseRadar").gameObject;
         baseRadarOff = transform.Find("Canvas/BaseRadar_off").gameObject;
+        baseBackground = transform.Find("Background/Background_1").gameObject;
+
         LED = transform.Find("LED").gameObject;
         blipParent = transform.Find("Canvas/BlipParent").gameObject;
         blip = transform.Find("Canvas/BlipParent/Blip").gameObject;
@@ -96,11 +107,13 @@ public class MotionTrackerScript : GrabbableObject
         {
             baseRadarOff.SetActive(!enable);
             baseRadar.SetActive(enable);
+            baseBackground.SetActive(true);
         }
         else
         {
             baseRadarOff.SetActive(false);
             baseRadar.SetActive(false);
+            baseBackground.SetActive(false);
         }
 
         if (!enable)
@@ -115,9 +128,10 @@ public class MotionTrackerScript : GrabbableObject
     public override void ItemActivate(bool used, bool buttonDown = true)
     {
         base.ItemActivate(used, buttonDown);
-
+        trackerAudio.pitch = 1;
         if (used)
         {
+
             trackerAudio.PlayOneShot(trackerOnClip);
             RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.4f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
         }
@@ -135,6 +149,7 @@ public class MotionTrackerScript : GrabbableObject
     public override void UseUpBatteries()
     {
         base.UseUpBatteries();
+        trackerAudio.pitch = 1;
         trackerAudio.PlayOneShot(trackerOutOfBatteriesClip);
         RoundManager.Instance.PlayAudibleNoise(base.transform.position, 13f, 0.65f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
         Enable(false);
@@ -142,6 +157,8 @@ public class MotionTrackerScript : GrabbableObject
 
     public override void Update()
     {
+        EnemyAI[] array = FindObjectsOfType<EnemyAI>();
+
         base.Update();
 
         if (isPocketed)
@@ -150,87 +167,82 @@ public class MotionTrackerScript : GrabbableObject
             return;
         }
 
-        if (isBeingUsed)
+        if (!isBeingUsed || insertedBattery.empty)
         {
-            if (!isPocketed)
+            Enable(false);
+            return;
+        }
+
+        Enable(true);
+        blipParent.transform.localRotation = UnityEngine.Quaternion.Euler(0, 0, baseRadar.transform.eulerAngles.y);
+
+        foreach (var blip in blipPool)
+        {
+            blip.SetActive(false);
+        }
+
+        var lastScannedEntitiesCopy = new Dictionary<int, ScannedEntity>(scannedEntities);
+
+        scannedEntities.Clear();
+
+        var playerPos = transform.position;
+        var colliderCount = Physics.OverlapCapsuleNonAlloc(playerPos, playerPos + Vector3.down * 100, searchRadius, colliders, layerMask: 8 | 524288);
+
+        float closestDistance = float.MaxValue;
+
+        for (int c = 0; c < colliderCount; c++)
+        {
+            var collider = colliders[c];
+            int hash = collider.transform.GetHashCode();
+
+            var entity = new ScannedEntity
             {
-                Enable(true);
-                blipParent.transform.localRotation = Quaternion.Euler(0, 0, baseRadar.transform.eulerAngles.y + 0);
-            }
-            else
+                obj = collider,
+                position = collider.transform.position - baseRadar.transform.position,
+                rawPosition = collider.transform.position,
+                speed = lastScannedEntitiesCopy.ContainsKey(hash)
+                    ? (collider.transform.position - lastScannedEntitiesCopy[hash].rawPosition).magnitude
+                    : 0
+            };
+
+            if (!scannedEntities.ContainsKey(hash))
             {
-                Enable(false);
-            }
+                scannedEntities.Add(hash, entity);
+                var blip = blipPool[scannedEntities.Count - 1];
+                entity.blip = blip;
 
-            if (insertedBattery.empty)
-            {
-                Enable(false);
-                return;
-            }
+                blip.transform.localPosition = new Vector3(
+                    Remap(entity.position.x, -searchRadius, searchRadius, -45, 45),
+                    Remap(entity.position.z, -searchRadius, searchRadius, -45, 45),
+                    -.1f
+                );
 
-            for (var j = 0; j < maxEntities; ++j)
-            {
-                blipPool[j].SetActive(false);
-            }
-
-            var lastScannedEntities = new Hashtable(scannedEntities);
-            scannedEntities.Clear();
-
-            var playerPos = transform.position;
-
-            var colliderCount = Physics.OverlapCapsuleNonAlloc(playerPos, new Vector3(playerPos.x, playerPos.y-200, playerPos.z), searchRadius, colliders,
-                layerMask: 8 | 524288); // Player | Enemies
+                bool isActive = entity.speed > MotionTrackerConfig.MotionTrackerSpeedDetect &&
+                                ((!isHeld || Vector3.Distance(entity.rawPosition, playerHeldBy.transform.position) > 5));
+                blip.SetActive(isActive);
 
 
-            var i = 0;
-            for (int c = 0; c < colliderCount; ++c)
-            {
-                var collider = colliders[c];
-                var entity = new ScannedEntity
+                foreach (EnemyAI target in array)
                 {
-                    obj = collider, position = collider.transform.position - baseRadar.transform.position,
-                    rawPosition = collider.transform.position
-                };
-
-                if (lastScannedEntities.Contains(entity.obj.transform.GetHashCode()))
-                {
-                    entity.speed = (collider.transform.position -
-                                    ((ScannedEntity)lastScannedEntities[entity.obj.transform.GetHashCode()])
-                                    .rawPosition)
-                        .magnitude;
-                }
-                else
-                {
-                    entity.speed = 0;
-                }
-
-                if (!scannedEntities.Contains(entity.obj.transform.GetHashCode()))
-                {
-                    entity.blip = blipPool[i];
-
-                    i += 1;
-
-                    var blipLocalPos = entity.blip.transform.localPosition;
-                    blipLocalPos = entity.position;
-
-                    entity.blip.transform.localPosition = new Vector3(
-                        Remap(blipLocalPos.x, -searchRadius, searchRadius, -45, 45),
-                        Remap(blipLocalPos.z, -searchRadius, searchRadius, -45, 45),
-                        -.1f);
-
-                    // only enable blips for moving objects
-                    entity.blip.SetActive(entity.speed > MotionTrackerConfig.MotionTrackerSpeedDetect);
-                    if (entity.speed > MotionTrackerConfig.MotionTrackerSpeedDetect && !trackerAudio.isPlaying)
+                    float distance = Vector3.Distance(target.transform.position, baseRadar.transform.position);
+                    if (distance < closestDistance)
                     {
-                        trackerAudio.PlayOneShot(trackerBlipClip);
-                        RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.05f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
+                        closestDistance = distance;
                     }
+                }
 
-                    scannedEntities.Add(entity.obj.transform.GetHashCode(), entity);
+                float clampedDistance = Mathf.Clamp(closestDistance, 1f, searchRadius);
+
+                if (blip.activeSelf && !trackerAudio.isPlaying)
+                {
+                    float pitch = Mathf.Lerp(1.8f, 0.8f, (clampedDistance - 1f) / (searchRadius - 1f));
+                    trackerAudio.pitch = pitch;
+                    trackerAudio.PlayOneShot(trackerBlipClip);
                 }
             }
         }
     }
+
 
     public float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)
     {
