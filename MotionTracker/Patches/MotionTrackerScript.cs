@@ -63,6 +63,7 @@ public class MotionTrackerScript : GrabbableObject
         itemProperties.grabSFX = walkieTalkie.grabSFX;
         itemProperties.pocketSFX = walkieTalkie.pocketSFX;
         itemProperties.dropSFX = shotGun.dropSFX;
+        itemProperties.weight = MotionTrackerConfig.MotionTrackerWeight;
         grabbable = true;
         grabbableToEnemies = true;
         mainObjectRenderer = GetComponent<MeshRenderer>();

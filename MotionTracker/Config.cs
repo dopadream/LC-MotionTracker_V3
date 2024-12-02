@@ -7,26 +7,30 @@ using UnityEngine;
 
 public class MotionTrackerConfig
 {
-    private const int byteDim = 17;
+    private const int byteDim = 21;
 
     private static int MotionTrackerCostLocal = 90;
     private static float MotionTrackerBatteryDurationLocal = 600f;
     private static float MotionTrackerSpeedDetectLocal = 0.01f;
     private static float MotionTrackerRangeLocal = 50f;
+    public static float MotionTrackerWeightLocal = 1.05f;
+
 
     public static int MotionTrackerCost = 90;
     public static float MotionTrackerBatteryDuration = 600f;
     public static float MotionTrackerSpeedDetect = 0.01f;
     public static float MotionTrackerRange = 50f;
+    public static float MotionTrackerWeight = 1.05f;
 
-    private static void SetValues(int Cost, float BatteryDuration, float SpeedDetect, float Range)
+    private static void SetValues(int Cost, float BatteryDuration, float SpeedDetect, float Range, float Weight)
     {
         MotionTrackerCost = Cost;
         MotionTrackerBatteryDuration = BatteryDuration;
         MotionTrackerSpeedDetect = SpeedDetect;
         MotionTrackerRange = Range;
+        MotionTrackerWeight = Weight;
     }
-    private static void SetToLocalValues() => SetValues(MotionTrackerCostLocal, MotionTrackerBatteryDurationLocal, MotionTrackerSpeedDetectLocal, MotionTrackerRangeLocal);
+    private static void SetToLocalValues() => SetValues(MotionTrackerCostLocal, MotionTrackerBatteryDurationLocal, MotionTrackerSpeedDetectLocal, MotionTrackerRangeLocal, MotionTrackerWeightLocal);
 
     public static void LoadConfig(ConfigFile config)
     {
@@ -36,6 +40,7 @@ public class MotionTrackerConfig
         MotionTrackerBatteryDurationLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerBatteryDuration", 600f, "Motion Tracker's battery life").Value, 0f, 9999f);
         MotionTrackerSpeedDetectLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerSpeedDetect", 0.01f, "Minimum speed at which entities can be detected by the Motion Tracker (0.05 is faster than a crouch walk)").Value, 0f, 9999f);
         MotionTrackerRangeLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerRange", 50f, "Motion Tracker's range of action").Value, 0f, 9999f);
+        MotionTrackerWeightLocal = Mathf.Clamp(config.Bind("General", "MotionTrackerWeight", 1.05f, "The weight of the motion tracker. Formula is 1+(X/105). (default value is 5 pounds, 1.0 is 0 pounds) ").Value, 1f, 9999f);
 
         SetToLocalValues();
     }
@@ -48,6 +53,7 @@ public class MotionTrackerConfig
         Array.Copy(BitConverter.GetBytes(MotionTrackerBatteryDurationLocal), 0, data, 5, 4);
         Array.Copy(BitConverter.GetBytes(MotionTrackerSpeedDetectLocal), 0, data, 9, 4);
         Array.Copy(BitConverter.GetBytes(MotionTrackerRangeLocal), 0, data, 13, 4);
+        Array.Copy(BitConverter.GetBytes(MotionTrackerWeightLocal), 0, data, 17, 4);
         return data;
     }
 
@@ -61,6 +67,7 @@ public class MotionTrackerConfig
                     MotionTrackerBatteryDuration = BitConverter.ToSingle(data, 5);
                     MotionTrackerSpeedDetect = BitConverter.ToSingle(data, 9);
                     MotionTrackerRange = BitConverter.ToSingle(data, 13);
+                    MotionTrackerWeight = BitConverter.ToSingle(data, 17);
                     Debug.Log("MotionTrackerLog: Host config set successfully");
                     break;
                 }
