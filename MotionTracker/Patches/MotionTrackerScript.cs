@@ -20,6 +20,7 @@ public struct ScannedEntity
     public float speed;
     public GameObject blip;
     public AudioSource trackerAudio;
+    public AudioSource trackerBlipAudio;
 
 }
 
@@ -31,13 +32,13 @@ public class MotionTrackerScript : GrabbableObject
     private GameObject blip;
     private GameObject blipParent;
     private AudioSource trackerAudio;
+    private AudioSource trackerBlipAudio;
+
     private static AudioClip trackerOnClip, trackerOffClip, trackerBlipClip, trackerOutOfBatteriesClip;
 
     private float searchRadius = MotionTrackerConfig.MotionTrackerRange;
 
-    private Dictionary<int, ScannedEntity> lastScannedEntities = new Dictionary<int, ScannedEntity>();
     private Dictionary<int, ScannedEntity> scannedEntities = new Dictionary<int, ScannedEntity>();
-    private List<EnemyAI> enemyAIList = new List<EnemyAI>();
 
     private List<GameObject> blipPool = new List<GameObject>();
 
@@ -85,6 +86,8 @@ public class MotionTrackerScript : GrabbableObject
         baseBackground = transform.Find("Background/Background_1").gameObject;
 
         LED = transform.Find("LED").gameObject;
+        trackerBlipAudio = LED.GetComponent<AudioSource>();
+
         blipParent = transform.Find("Canvas/BlipParent").gameObject;
         blip = transform.Find("Canvas/BlipParent/Blip").gameObject;
         blip.SetActive(false);
@@ -101,7 +104,7 @@ public class MotionTrackerScript : GrabbableObject
 
     private void Enable(bool enable)
     {
-        LED.SetActive(enable);
+        LED.GetComponent<MeshRenderer>().enabled = enable;
 
         if (!isPocketed)
         {
@@ -128,16 +131,15 @@ public class MotionTrackerScript : GrabbableObject
     public override void ItemActivate(bool used, bool buttonDown = true)
     {
         base.ItemActivate(used, buttonDown);
-        trackerAudio.pitch = 1;
+        trackerBlipAudio.pitch = 1;
         if (used)
         {
-
-            trackerAudio.PlayOneShot(trackerOnClip);
+            trackerBlipAudio.PlayOneShot(trackerOnClip);
             RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.4f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
         }
         else
         {
-            trackerAudio.PlayOneShot(trackerOffClip);
+            trackerBlipAudio.PlayOneShot(trackerOffClip);
             RoundManager.Instance.PlayAudibleNoise(base.transform.position, 7f, 0.4f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
         }
 
@@ -149,7 +151,6 @@ public class MotionTrackerScript : GrabbableObject
     public override void UseUpBatteries()
     {
         base.UseUpBatteries();
-        trackerAudio.pitch = 1;
         trackerAudio.PlayOneShot(trackerOutOfBatteriesClip);
         RoundManager.Instance.PlayAudibleNoise(base.transform.position, 13f, 0.65f, 0, isInElevator && StartOfRound.Instance.hangarDoorsClosed);
         Enable(false);
@@ -233,11 +234,11 @@ public class MotionTrackerScript : GrabbableObject
 
                 float clampedDistance = Mathf.Clamp(closestDistance, 1f, searchRadius);
 
-                if (blip.activeSelf && !trackerAudio.isPlaying)
+                if (blip.activeSelf && !trackerBlipAudio.isPlaying)
                 {
                     float pitch = Mathf.Lerp(1.8f, 0.8f, (clampedDistance - 1f) / (searchRadius - 1f));
-                    trackerAudio.pitch = pitch;
-                    trackerAudio.PlayOneShot(trackerBlipClip);
+                    trackerBlipAudio.pitch = pitch;
+                    trackerBlipAudio.PlayOneShot(trackerBlipClip);
                 }
             }
         }
