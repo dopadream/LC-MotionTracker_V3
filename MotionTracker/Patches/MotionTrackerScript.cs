@@ -190,6 +190,7 @@ public class MotionTrackerScript : GrabbableObject
         var colliderCount = Physics.OverlapCapsuleNonAlloc(playerPos, playerPos + Vector3.down * 100, searchRadius, colliders, layerMask: 8 | 524288);
 
         float closestDistance = float.MaxValue;
+        float pitch = 1;
 
         for (int c = 0; c < colliderCount; c++)
         {
@@ -226,7 +227,7 @@ public class MotionTrackerScript : GrabbableObject
                 foreach (EnemyAI target in array)
                 {
                     float distance = Vector3.Distance(target.transform.position, baseRadar.transform.position);
-                    if (distance < closestDistance)
+                    if (distance < closestDistance && (target.transform.position != target.destination))
                     {
                         closestDistance = distance;
                     }
@@ -236,7 +237,7 @@ public class MotionTrackerScript : GrabbableObject
 
                 if (blip.activeSelf && !trackerBlipAudio.isPlaying)
                 {
-                    float pitch = Mathf.Lerp(1.8f, 0.8f, (clampedDistance - 1f) / (searchRadius - 1f));
+                    pitch = Mathf.Lerp(1.8f, 0.8f, (clampedDistance - 1f) / (searchRadius - 1f));
                     trackerBlipAudio.pitch = pitch;
                     trackerBlipAudio.PlayOneShot(trackerBlipClip);
                 }
@@ -247,6 +248,7 @@ public class MotionTrackerScript : GrabbableObject
 
     public float Remap(float from, float fromMin, float fromMax, float toMin, float toMax)
     {
+
         var fromAbs = from - fromMin;
         var fromMaxAbs = fromMax - fromMin;
 
