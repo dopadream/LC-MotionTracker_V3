@@ -237,8 +237,9 @@ public class MotionTrackerScript : GrabbableObject
 
                 if (blip.activeSelf && !trackerBlipAudio.isPlaying)
                 {
-                    pitch = Mathf.Lerp(1.8f, 0.8f, (clampedDistance - 1f) / (searchRadius - 1f));
+                    pitch = Mathf.Lerp(MotionTrackerConfig.MotionTrackerMaxPitch, MotionTrackerConfig.MotionTrackerMinPitch, (clampedDistance - 1f) / (searchRadius - 1f));
                     trackerBlipAudio.pitch = pitch;
+                    trackerBlipAudio.volume = MotionTrackerConfig.MotionTrackerVolume;
                     trackerBlipAudio.PlayOneShot(trackerBlipClip);
                 }
             }
