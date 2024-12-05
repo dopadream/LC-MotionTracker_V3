@@ -1,4 +1,4 @@
-# Motion Tracker V3
+# [Motion Tracker V3](https://thunderstore.io/c/lethal-company/p/dopadream/Motion_Tracker_V3/)
 Adds a Motion Tracker similar to the one in "Alien: Isolation".\
 Can be bought in the terminal to track movement near the player
 
