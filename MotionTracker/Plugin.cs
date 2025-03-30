@@ -6,21 +6,32 @@ using Unity.Netcode;
 using HarmonyLib;
 using System.IO;
 using System.Reflection;
+using BepInEx.Bootstrap;
 
 namespace MotionTracker
 {
-    [BepInPlugin("dopadream.MotionTracker-V3", "MotionTracker-V3", "1.0.9")]
+    [BepInPlugin(PLUGIN_GUID, PLUGIN_NAME, PLUGIN_VERSION)]
+    [BepInDependency(LOBBY_COMPATIBILITY, BepInDependency.DependencyFlags.SoftDependency)]
     public class Plugin : BaseUnityPlugin
     {
+        internal const string PLUGIN_GUID = "dopadream.lethalcompany.MotionTracker-V3", PLUGIN_NAME = "MotionTracker-V3", PLUGIN_VERSION = "1.1.0", LOBBY_COMPATIBILITY = "BMX.LobbyCompatibility";
         private static Item motionTrackerLED_Item;
         private static MotionTrackerScript spawnedMotionTracker;
         public static AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "motiontrackerled"));
 
         private void Awake()
         {
+
             Logger.LogInfo($"Plugin {"dopadream.MotionTracker-V3"} is loaded!");
             MotionTrackerConfig.LoadConfig(Config);
             Logger.LogInfo("Config loaded");
+
+            if (Chainloader.PluginInfos.ContainsKey(LOBBY_COMPATIBILITY))
+            {
+                Logger.LogInfo("CROSS-COMPATIBILITY - Lobby Compatibility detected");
+                LobbyCompatibility.Init();
+            }
+
 
             Harmony.CreateAndPatchAll(typeof(MotionTrackerConfig));
 

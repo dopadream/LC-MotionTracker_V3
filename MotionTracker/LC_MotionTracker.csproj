@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <AssemblyName>MotionTracker-V3</AssemblyName>
         <Description>Add the MotionTracker from "Alien: Isolation"</Description>
-        <Version>1.0.9</Version>
+        <Version>1.1.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
@@ -32,12 +32,15 @@
             <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Netcode.Runtime.dll</HintPath>
         </Reference>
         <Reference Include="LethalLib">
-            <HintPath>C:\Users\Stephanie\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\motion detector testor\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
+            <HintPath>C:\Users\Stephanie\AppData\Roaming\com.kesomannen.gale\lethal-company\profiles\test222\BepInEx\plugins\Evaisa-LethalLib\LethalLib\LethalLib.dll</HintPath>
         </Reference>
         <Reference Include="Collections">
             <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data\Managed\Unity.Collections.dll</HintPath>
         </Reference>
     </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="TeamBMX.LobbyCompatibility" Version="1.*" PrivateAssets="all" />
+  </ItemGroup>
     <ItemGroup>
       <Compile Remove="LC_MotionTracker_Asset\**" />
       <Compile Remove="LC_MotionTracker_Assets\**" />

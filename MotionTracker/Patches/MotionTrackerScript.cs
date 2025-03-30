@@ -158,7 +158,7 @@ public class MotionTrackerScript : GrabbableObject
 
     public override void Update()
     {
-        EnemyAI[] array = FindObjectsOfType<EnemyAI>();
+        EnemyAI[] array = RoundManager.Instance.SpawnedEnemies.ToArray();
 
         base.Update();
 
